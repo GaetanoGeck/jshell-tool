@@ -3,6 +3,7 @@ package jt.collection;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.function.Function;
@@ -114,5 +115,62 @@ public class Coll {
 				(a == null) ? null : projection.apply(a), //
 				(b == null) ? null : projection.apply(b), //
 				ComparatorUtils.naturalComparator());
+	}
+	
+	/**
+	 * Create a map from a collection with the key resulting from applying the keyExtractor to each element.
+	 * @param <K> type of the keys
+	 * @param <T> type of the values of the map/the elements of the collection
+	 * @param collection collection
+	 * @param keyExtractor function defining the key of each element
+	 * @return map
+	 */
+	public static <K, T> Map<K,T> toMap(Collection<T> collection, Function<T,K> keyExtractor) {
+		return collection.stream() //
+				.collect(Collectors.toMap(keyExtractor, Function.identity()));
+	}
+	
+	/**
+	 * Create a map from a collection with the key resulting from applying the keyExtractor to each element.
+	 * @param <T> type of the elements of the collection
+	 * @param <K> type of the keys
+	 * @param <V> type of the values of the map
+	 * @param collection collection
+	 * @param keyExtractor function defining the key of each element
+	 * @return map
+	 */
+	public static <T, K, V> Map<K,V> toMap(Collection<T> collection, Function<T,K> keyExtractor, Function<T,V> valueExtractor) {
+		return collection.stream() //
+				.collect(Collectors.toMap(keyExtractor, valueExtractor));
+	}
+	
+	/**
+	 * Create a map from keys to lists of elements of the collection sharing the same key.
+	 * 
+	 * @param <T> type of the elements of the collection
+	 * @param <K> type of the keys
+	 * @param collection collection
+	 * @param keyExtractor function defining the key of each element
+	 * @return map of lists
+	 */
+	public static <T,K> Map<K,List<T>> toGroups(Collection<T> collection, Function<T,K> keyExtractor) {
+		return collection.stream() //
+				.collect(Collectors.groupingBy(keyExtractor));
+	}
+	
+	/**
+	 * Map only the values of a map.
+	 *  
+	 * @param <K> type of the keys of the input and output map
+	 * @param <V> type of the values of the input map
+	 * @param <W> type of the values of the output map
+	 * @param map input map
+	 * @param valueMapper function defining the new value for each old value 
+	 * @return map
+	 */
+	public static <K,V,W> Map<K,W> mapValues(Map<K,V> map, Function<V,W> valueMapper) {
+		return map.entrySet() //
+				.stream() //
+				.collect(Collectors.toMap(e -> e.getKey(), e -> valueMapper.apply(e.getValue())));
 	}
 }
